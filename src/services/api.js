@@ -89,9 +89,17 @@ export const getStudentAttendance = (studentId) => api.get(`/attendance/student/
 export const downloadAttendance = (filters = {}) => api.get('/attendance/download', { params: filters });
 
 
-// --- Review Endpoints ---
+// --- Review & Feedback Endpoints ---
 export const toggleLikeEvent = (eventId) => api.post(`/review/toggle-like/${eventId}`);
 export const submitEventReview = (eventId, reviewData) => api.post(`/review/submit/${eventId}`, reviewData);
 export const getEventReviews = (eventId) => api.get(`/review/event/${eventId}`);
 export const getMyReviews = () => api.get('/review/my');
 export const deleteReview = (reviewId) => api.delete(`/review/delete/${reviewId}`);
+export const getFeedbackStats = (eventId) => api.get(`/review/stats/${eventId}`);
+export const moderateFeedback = (reviewId, action) => api.put(`/review/moderate/${reviewId}`, { action });
+export const reportFeedback = (reviewId, reason) => api.post(`/review/report/${reviewId}`, { reason });
+
+
+// --- Notification Endpoints ---
+export const getNotifications = () => api.get('/notifications');
+export const markNotificationAsRead = (notificationId) => api.put(`/notifications/${notificationId}/read`);

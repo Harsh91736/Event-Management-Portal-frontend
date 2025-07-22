@@ -3,6 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; // Import useAuth hook
 import { toast } from 'sonner'; // For notifications
+import Button from '../components/Common/Button';
+
+const roles = [
+  { value: "student", label: "Student" },
+  { value: "faculty", label: "Faculty" },
+  { value: "headFaculty", label: "Head Faculty" },
+];
 
 function RegisterPage() {
   const [fullName, setFullName] = useState('');
@@ -10,6 +17,7 @@ function RegisterPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [contactNumber, setContactNumber] = useState('');
+  const [role, setRole] = useState('');
   const [studentId, setStudentId] = useState(''); // Assuming studentId is required for students
   const [profilePicture, setProfilePicture] = useState(null); // For file input
   const [loading, setLoading] = useState(false);
@@ -30,8 +38,17 @@ function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent default form submission
 
+    // Validate required fields
+    if (!fullName || !email || !password || !contactNumber || !role) {
+      toast.error("All required fields (Full Name, Email, Contact Number, Password, Role) are necessary.");
+      return;
+    }
     if (password !== confirmPassword) {
       toast.error("Passwords do not match.");
+      return;
+    }
+    if (role === "student" && !studentId) {
+      toast.error("Student ID is required for students.");
       return;
     }
 
@@ -43,7 +60,10 @@ function RegisterPage() {
     formData.append('email', email);
     formData.append('password', password);
     formData.append('contactNumber', contactNumber);
-    formData.append('studentId', studentId); // Add studentId
+    formData.append('role', role);
+    if (role === "student") {
+      formData.append('studentId', studentId);
+    }
     if (profilePicture) {
       formData.append('file', profilePicture); // 'file' should match the field name in your Multer middleware
     }
@@ -67,12 +87,12 @@ function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
-              Full Name
+              Full Name *
             </label>
             <input
               type="text"
               id="fullName"
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm"
               placeholder="John Doe"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
@@ -81,12 +101,12 @@ function RegisterPage() {
           </div>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email Address
+              Email Address *
             </label>
             <input
               type="email"
               id="email"
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm"
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -94,13 +114,60 @@ function RegisterPage() {
             />
           </div>
           <div>
+            <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700 mb-1">
+              Contact Number *
+            </label>
+            <input
+              type="text"
+              id="contactNumber"
+              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm"
+              placeholder="e.g., +919876543210"
+              value={contactNumber}
+              onChange={(e) => setContactNumber(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+              Role *
+            </label>
+            <select
+              id="role"
+              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              required
+            >
+              <option value="">Select Role</option>
+              {roles.map((r) => (
+                <option key={r.value} value={r.value}>{r.label}</option>
+              ))}
+            </select>
+          </div>
+          {role === "student" && (
+            <div>
+              <label htmlFor="studentId" className="block text-sm font-medium text-gray-700 mb-1">
+                Student ID *
+              </label>
+              <input
+                type="text"
+                id="studentId"
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm"
+                placeholder="e.g., S12345"
+                value={studentId}
+                onChange={(e) => setStudentId(e.target.value)}
+                required={role === "student"}
+              />
+            </div>
+          )}
+          <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
+              Password *
             </label>
             <input
               type="password"
               id="password"
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm"
               placeholder="********"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -109,43 +176,15 @@ function RegisterPage() {
           </div>
           <div>
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-              Confirm Password
+              Confirm Password *
             </label>
             <input
               type="password"
               id="confirmPassword"
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm"
               placeholder="********"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700 mb-1">
-              Contact Number
-            </label>
-            <input
-              type="text"
-              id="contactNumber"
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="e.g., +919876543210"
-              value={contactNumber}
-              onChange={(e) => setContactNumber(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="studentId" className="block text-sm font-medium text-gray-700 mb-1">
-              Student ID
-            </label>
-            <input
-              type="text"
-              id="studentId"
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="e.g., S12345"
-              value={studentId}
-              onChange={(e) => setStudentId(e.target.value)}
               required
             />
           </div>
@@ -157,17 +196,17 @@ function RegisterPage() {
               type="file"
               id="profilePicture"
               accept="image/*"
-              className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              className="mt-1 block w-full text-sm text-gray-500"
               onChange={handleFileChange}
             />
           </div>
-          <button
+          <Button
             type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-300"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition duration-300"
             disabled={loading}
           >
             {loading ? 'Registering...' : 'Register'}
-          </button>
+          </Button>
         </form>
         <p className="mt-6 text-center text-sm text-gray-600">
           Already have an account?{' '}
